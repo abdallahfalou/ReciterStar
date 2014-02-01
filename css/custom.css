@@ -1,0 +1,25 @@
+.skull-off{
+		display: none;
+	}
+.happy-off{
+		display: none;
+	}
+
+div#header {
+    padding:0;
+    height:80px;
+    background-image: url('../images/justBreathe.png');
+    background-position: 50 0;
+    background-repeat: no-repeat;
+    background-size: 160 80;
+    margin:0;
+    background-color: rgb(3, 59, 156);
+}
+
+body {
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #DAE5EB), color-stop(1, #DAE5EB));
+}
+
+body.drag {
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #FF6666), color-stop(1, #FF6666));
+}
