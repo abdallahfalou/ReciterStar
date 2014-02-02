@@ -1,5 +1,3 @@
-var socket = io.connect('http://build.kiwiwearables.com:3000');
- 
 console.log("hello");
  
 // Declare global variables here 
@@ -25,65 +23,47 @@ var total_smokes = new TimeSeries(),
     bufferSize = 10,    // drag --> 10
     threshold = 40,     // threshold --> 35
     dragArray = new Array(bufferSize);
-
-//Initialize DTW algorithm with thresholds (total thresholds AND local threasholds)
-DTW.init(threshold, 30); 
-
-// Send text message to Brian
-function callout() {
-    $.ajax({
-        type: 'POST',
-        url: 'http://localhost:8080/msg'
-    })
-    .done(function (msg) {
-        console.log(msg);
-    });
-}
  
-// edit device ID 
-socket.on('connect', function() {
-    socket.emit('listen', {device_id: '35', password: '123'});
-});
  
-socket.on('listen_response', function(data) {
-
-    $('#device_streaming').html("Kiwi Streaming: ON");
-    var dtw = DTW.addInput(data.message);
-    total = dtw.total;
-
-    // add all the time series data
-    total_smokes.append(new Date().getTime(), graphDTW(total/6));
-    ax.append(new Date().getTime(), graphDTW(dtw.ax));
-    ay.append(new Date().getTime(), graphDTW(dtw.ay));
-    az.append(new Date().getTime(), graphDTW(dtw.az));
-    gx.append(new Date().getTime(), graphDTW(dtw.gx));
-    gy.append(new Date().getTime(), graphDTW(dtw.gy));
-    gz.append(new Date().getTime(), graphDTW(dtw.gz));
-
-    if ((dtw.pass) && (dontCheck == 0)) {
-        dragArrayCounter++; 
-
-        //only count a drag if 10 predictions are counted
-        if(dragArrayCounter >= bufferSize){
-          isDrag++;
-          nicotine = nicotinefinal + 50; // 1ug for 1 cigarette and 20 drags for one cigarette
-          start = new Date().getTime();
-          $('#skull').toggleClass("skull-off");
-          $('body').addClass('drag');
-          // callout();
-          dontCheck = 1;
-
-          setTimeout(function(){
-            dragArrayCounter = 0;
-            dontCheck = 0;
-            $('#skull').toggleClass("skull-off");
-            $('body').removeClass('drag');
-          },2000);
-        }
-    }
-    $('#totalDrags').html(isDrag);
-
-});
+// socket.on('listen_response', function(data) {
+// 
+//     $('#device_streaming').html("Kiwi Streaming: ON");
+//     var dtw = DTW.addInput(data.message);
+//     total = dtw.total;
+// 
+//     // add all the time series data
+//     total_smokes.append(new Date().getTime(), graphDTW(total/6));
+//     ax.append(new Date().getTime(), graphDTW(dtw.ax));
+//     ay.append(new Date().getTime(), graphDTW(dtw.ay));
+//     az.append(new Date().getTime(), graphDTW(dtw.az));
+//     gx.append(new Date().getTime(), graphDTW(dtw.gx));
+//     gy.append(new Date().getTime(), graphDTW(dtw.gy));
+//     gz.append(new Date().getTime(), graphDTW(dtw.gz));
+// 
+//     if ((dtw.pass) && (dontCheck == 0)) {
+//         dragArrayCounter++; 
+// 
+//         //only count a drag if 10 predictions are counted
+//         if(dragArrayCounter >= bufferSize){
+//           isDrag++;
+//           nicotine = nicotinefinal + 50; // 1ug for 1 cigarette and 20 drags for one cigarette
+//           start = new Date().getTime();
+//           $('#skull').toggleClass("skull-off");
+//           $('body').addClass('drag');
+//           // callout();
+//           dontCheck = 1;
+// 
+//           setTimeout(function(){
+//             dragArrayCounter = 0;
+//             dontCheck = 0;
+//             $('#skull').toggleClass("skull-off");
+//             $('body').removeClass('drag');
+//           },2000);
+//         }
+//     }
+//     $('#totalDrags').html(isDrag);
+// 
+// });
 
 function graphDTW(amt){
   return Math.max((10 - amt), 0);
@@ -125,4 +105,24 @@ function createTimeline() {
 
 }
 
+function errorCallback() {
+	console.log("called errorCallback()");
+}
+
 createTimeline();
+
+navigator.getUserMedia  = navigator.getUserMedia ||
+                          navigator.webkitGetUserMedia ||
+                          navigator.mozGetUserMedia ||
+                          navigator.msGetUserMedia;
+
+var video = document.querySelector('video');
+
+console.log("Checking for UserMedia support...");
+if (navigator.getUserMedia) {
+  navigator.getUserMedia({audio: true, video: true}, function(stream) {
+    video.src = window.URL.createObjectURL(stream);
+  }, errorCallback);
+} else {
+  video.src = 'somevideo.webm'; // fallback.
+}

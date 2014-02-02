@@ -1,0 +1,26 @@
+<html>
+<head>
+</head>
+
+<body>
+	<h3>Video below</h3>
+	<video autoplay></video>
+	<script>
+		navigator.getUserMedia  = navigator.getUserMedia ||
+		                          navigator.webkitGetUserMedia ||
+		                          navigator.mozGetUserMedia ||
+		                          navigator.msGetUserMedia;
+
+		var video = document.querySelector('video');
+
+		if (navigator.getUserMedia) {
+		  navigator.getUserMedia({audio: true, video: true}, function(stream) {
+		    video.src = window.URL.createObjectURL(stream);
+		  }, errorCallback);
+		} else {
+		  video.src = 'somevideo.webm'; // fallback.
+		}
+	</script>
+	
+	<h3>Video above</h3>
+</body>

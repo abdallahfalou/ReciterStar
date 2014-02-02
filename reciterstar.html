@@ -1,0 +1,70 @@
+<html> 
+<head>
+
+	<!-- styles -->
+	<link href="./css/custom.css" rel="stylesheet" />
+	<link href="./css/bootstrap.css" rel="stylesheet" />
+	
+	<!-- javascript -->
+	<script src="./javascript/smoothie.js" type="text/javascript"></script>
+	<script src="./javascript/jquery-1.10.2.min.js"></script>
+	<script src="./javascript/raphael.2.1.0.min.js"></script>
+	<script src="./javascript/socket.io.js"></script>
+	<script src="./javascript/modernizr-latest.js"></script>
+
+	<title>Breathe</title>
+
+</head>
+ 
+<body>
+	<div id="header">
+	</div>
+	<div class="container">
+		<br>
+
+
+	
+		<div class="row">
+			<div class="span4">
+			 	 
+				<h1 class="num-value">
+					<span id="totalNicotine">0.000</span> <span><i>&mu;</i>g</span>
+			    </h1>
+			    <h4>Total Nicotine</h4>
+			</div>
+
+			<div class="span4">
+			 	 
+				<h2 id="totalDrags" class="num-value">
+			                0                                
+			    </h2>
+			    <h4>Number of Drags</h4>
+			</div>
+ 			<div class="span4">
+				<img src="./images/skull.png" width="25%" class="skull-off" id="skull" style="float:right">
+			 	<img src="./images/happy.png" width="25%" class="happy-off" id="happy" style="float:right">
+			 	<br>
+			</div>
+		</div>
+		<div class="well">
+			<canvas width="900" id="chart-2"></canvas>
+		</div>
+		<h3>Drag Detector</h3>
+		<div class="well">
+			<canvas width="900" id="chart-1"></canvas>
+        </div>
+		<div class="row">
+			<div class="span4">
+				<h1 style="font-size: 12pt;" id="device_streaming">OFF</h1>
+			</div>
+		</div>
+	</div>
+	
+	<video autoplay>
+		Your browser does not support audio playback
+	</video>
+	
+	<script src="./javascript/custom.js"></script>
+
+</body>
+</html>
