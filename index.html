@@ -12,7 +12,7 @@
 	<script src="./javascript/socket.io.js"></script>
 	<script src="./javascript/modernizr-latest.js"></script>
 
-	<title>Breathe</title>
+	<title>ReciterStar</title>
 
 </head>
  
@@ -22,25 +22,29 @@
 	<div class="container">
 		<br>
 
-
-	
 		<div class="row">
-			<div class="span4">
-			 	 
+			<div class="col-md-10">
 				<h1 class="num-value">
-					<span id="totalNicotine">0.000</span> <span><i>&mu;</i>g</span>
+					<span id="totalNicotine">--</span>
 			    </h1>
-			    <h4>Total Nicotine</h4>
+			    <h4>Note</h4>
 			</div>
-
-			<div class="span4">
-			 	 
-				<h2 id="totalDrags" class="num-value">
+			
+			<div class="col-md-2">
+			 	<div class="btn-group">
+					<button type="button" class="btn btn-default" onclick="this.innerText = togglePlayback()">
+						<span class="glyphicon glyphicon-play"></span>Demo
+					</button>
+					<button type="button" class="btn btn-default" onclick="toggleLiveInput()">
+						<span class="glyphicon glyphicon-record"></span>Mic
+					</button>
+				</div>
+				<!-- <h2 id="totalDrags" class="num-value">
 			                0                                
 			    </h2>
-			    <h4>Number of Drags</h4>
+			    <h4>Number of Drags</h4> -->
 			</div>
- 			<div class="span4">
+ 			<div class="col-md-4">
 				<img src="./images/skull.png" width="25%" class="skull-off" id="skull" style="float:right">
 			 	<img src="./images/happy.png" width="25%" class="happy-off" id="happy" style="float:right">
 			 	<br>
@@ -49,22 +53,19 @@
 		<div class="well">
 			<canvas width="900" id="chart-2"></canvas>
 		</div>
-		<h3>Drag Detector</h3>
+		<!-- <h3>Drag Detector</h3>
 		<div class="well">
 			<canvas width="900" id="chart-1"></canvas>
         </div>
 		<div class="row">
-			<div class="span4">
+			<div class="col-md-4">
 				<h1 style="font-size: 12pt;" id="device_streaming">OFF</h1>
 			</div>
-		</div>
+		</div> -->
 	</div>
 	
-	<video autoplay>
-		Your browser does not support audio playback
-	</video>
-	
-	<script src="./javascript/custom.js"></script>
+	<script src="./javascript/custom2.js"></script>
+    <script src="./javascript/bootstrap.min.js"></script>
 
 </body>
 </html>

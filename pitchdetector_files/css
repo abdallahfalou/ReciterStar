@@ -1,0 +1,6 @@
+@font-face {
+  font-family: 'Alike';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Alike'), local('Alike-Regular'), url(http://themes.googleusercontent.com/static/fonts/alike/v5/NDz5w5l-Wk6pE9qrZpbET6CWcynf_cDxXwCLxiixG1c.woff) format('woff');
+}
