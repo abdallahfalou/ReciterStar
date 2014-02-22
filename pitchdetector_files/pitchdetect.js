@@ -43,7 +43,7 @@ var currentPitch = 0;
 
 window.onload = function() {
 	var request = new XMLHttpRequest();
-	request.open("GET", "../sounds/whistling3.ogg", true);
+	request.open("GET", "../sounds/Whistle.mp3", true);
 	request.responseType = "arraybuffer";
 	request.onload = function() {
 	  audioContext.decodeAudioData( request.response, function(buffer) { 
