@@ -12,10 +12,12 @@ var detectorElem,
 	detuneElem,
 	detuneAmount;
 var WIDTH=300;
-var CENTER=150;
+var CENTER=143;
 var HEIGHT=42;
 var confidence = 0;
 var currentPitch = 0;
+
+var v = document.getElementsByTagName("video")[0] 
 
 var start = new Date().getTime();
 var freq = new TimeSeries();
@@ -23,11 +25,17 @@ var template = new TimeSeries();
 
 window.onload = function() {
 	var request = new XMLHttpRequest();
-	request.open("GET", "./media/Whistle.mp3", true);
+//v.play();
+
+request.open("GET", "./media/Fatiha.mp4", true);
+
 	request.responseType = "arraybuffer";
 	request.onload = function() {
 	  audioContext.decodeAudioData( request.response, function(buffer) { 
 	    	theBuffer = buffer;
+if (buffer != null){
+v.play()
+}
 		} );
 	}
 	request.send();
