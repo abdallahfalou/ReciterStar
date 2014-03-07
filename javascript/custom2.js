@@ -17,6 +17,13 @@ var HEIGHT=42;
 var confidence = 0;
 var currentPitch = 0;
 
+var pitchCounter = 1;
+var pitchArray = [65,69,94,94,94,93,93,93,93,93,93,93,93,93,93,93,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,85,86,74,86,86,62,58,86,86,74,58,86,86,86,66,67,86,74,86,86,86,150,67,67,85,85,150,150,150,150,150,150,150,150,150,150,150,92,150,93,69,74,65,81,81,59,81,81,81,81,81,81,74,81,81,74,57,59,65,93,150,150,150,150,150,150,86,86,86,86,86,86,67,74,86,74,86,67,86,62,86,86,86,86,86,86,86,86,74,58,86,85,150,150,150,150,150,150,92,92,92,92,92,92,93,92,93,93,65,93,65,57,69,93,74,93,93,93,93,93,93,150,150,150,150,150,150,150,86,87,87,56,87,87,87,150,150,150,87,68,87,87,63,87,87,87,87,87,87,56,63,150,150,74]
+
+var pitchArray2 = new Array()
+var pitchCompare = new Array()
+var FreqUpdate=5;
+
 var v = document.getElementsByTagName("video")[0] 
 
 var start = new Date().getTime();
@@ -25,17 +32,14 @@ var template = new TimeSeries();
 
 window.onload = function() {
 	var request = new XMLHttpRequest();
-//v.play();
 
-request.open("GET", "./media/Fatiha.mp4", true);
-
+//request.open("GET", "./media/Fatiha.mp4", true);
+request.open("GET", "./media/Whistle.mp3", true);
 	request.responseType = "arraybuffer";
 	request.onload = function() {
 	  audioContext.decodeAudioData( request.response, function(buffer) { 
 	    	theBuffer = buffer;
-if (buffer != null){
-v.play()
-}
+
 		} );
 	}
 	request.send();
@@ -58,7 +62,7 @@ v.play()
 
 	  	var reader = new FileReader();
 	  	reader.onload = function (event) {
-	  		audioContext.decodeAudioData( event.target.result, function(buffer) {
+audioContext.decodeAudioData( event.target.result, function(buffer) {
 	    		theBuffer = buffer;
 	  		}, function(){alert("error loading!");} ); 
 
@@ -67,6 +71,8 @@ v.play()
 	  		alert("Error: " + reader.error );
 		};
 	  	reader.readAsArrayBuffer(e.dataTransfer.files[0]);
+
+
 	  	return false;
 	};
 }
@@ -102,6 +108,7 @@ function toggleLiveInput() {
     getUserMedia({audio:true}, gotStream);
 }
 
+
 function togglePlayback() {
     var now = audioContext.currentTime;
 
@@ -122,6 +129,7 @@ function togglePlayback() {
     sourceNode.loop = true;
 
     analyser = audioContext.createAnalyser();
+	  		v.play()
     analyser.fftSize = 2048;
     sourceNode.connect( analyser );
     analyser.connect( audioContext.destination );
@@ -143,7 +151,35 @@ var noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "
 
 function noteFromPitch( frequency ) {
 	var noteNum = 12 * (Math.log( frequency / 440 )/Math.log(2) );
+	PitchUpdate=Math.round( noteNum ) + 69
+//	pitchArray[pitchCounter-1]=PitchUpdate
+	pitchArray2[pitchCounter-1]=PitchUpdate
+//	alert(JSON.stringify(pitchArray));
+pitchCounter++
+//pitchArray.push() 
+pitchArray2.push() 
 	return Math.round( noteNum ) + 69;
+	
+	
+}
+
+function displayPitchArray(){
+//console.log(pitchArray)
+for (var i =0; i<pitchArray.length;i++){
+pitchCompare[i]=pitchArray[i]-pitchArray2[i]
+}
+console.log(pitchCompare)
+
+var total = 0;
+for(var i in pitchCompare) { total += Math.abs(pitchCompare[i]); }
+console.log(total);
+if (total<7000){
+alert(JSON.stringify("MashaAllah well done!"));
+}
+else{
+alert(JSON.stringify("InshaAllah you'll do better next time!"));
+}
+
 }
 
 function frequencyFromNoteNumber( note ) {
@@ -246,6 +282,7 @@ setInterval(function(){
 	if (confidence > 10) {
 		freq.append(new Date().getTime(), currentPitch);
 template=freq
+
 
 	} else {
 		freq.append(new Date().getTime(), 0);
