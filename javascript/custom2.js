@@ -115,6 +115,7 @@ function togglePlayback() {
     if (isPlaying) {
         //stop playing and return
         sourceNode.stop( now );
+		pitchArray2.length=0 
         sourceNode = null;
         analyser = null;
         isPlaying = false;
@@ -152,12 +153,6 @@ var noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "
 function noteFromPitch( frequency ) {
 	var noteNum = 12 * (Math.log( frequency / 440 )/Math.log(2) );
 	PitchUpdate=Math.round( noteNum ) + 69
-//	pitchArray[pitchCounter-1]=PitchUpdate
-	pitchArray2[pitchCounter-1]=PitchUpdate
-//	alert(JSON.stringify(pitchArray));
-pitchCounter++
-//pitchArray.push() 
-pitchArray2.push() 
 	return Math.round( noteNum ) + 69;
 	
 	
@@ -165,11 +160,18 @@ pitchArray2.push()
 
 function displayPitchArray(){
 //console.log(pitchArray)
+if (pitchArray.length<pitchArray2.length){
 for (var i =0; i<pitchArray.length;i++){
 pitchCompare[i]=pitchArray[i]-pitchArray2[i]
 }
 console.log(pitchCompare)
-
+}
+if (pitchArray2.length<pitchArray.length){
+for (var i =0; i<pitchArray2.length;i++){
+pitchCompare[i]=pitchArray[i]-pitchArray2[i]
+}
+console.log(pitchCompare)
+}
 var total = 0;
 for(var i in pitchCompare) { total += Math.abs(pitchCompare[i]); }
 console.log(total);
@@ -248,6 +250,12 @@ function updatePitch( time ) {
 	 	detectorElem.className = "confident";
 	 	pitchElem.innerText = Math.floor( currentPitch ) ;
 	 	var note =  noteFromPitch( currentPitch );
+		//	pitchArray[pitchCounter-1]=PitchUpdate
+		//	alert(JSON.stringify(pitchArray));
+		//pitchArray.push() 
+		pitchArray2[pitchCounter-1]=PitchUpdate
+		pitchCounter++
+		pitchArray2.push() 
 		noteElem.innerHTML = noteStrings[note%12];
 		var detune = centsOffFromPitch( currentPitch, note );
 		if (detune == 0 ) {
