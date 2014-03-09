@@ -314,21 +314,5 @@ function errorCallback() {
 	console.log("called errorCallback()");
 }
 
-createTimeline();
-//Here's to add the picture
-
-var canvas = document.getElementById('kidoutput'),
-context = canvas.getContext('2d');
-
-quran_kid();
-
-function quran_kid()
-{
-  base_image = new Image();
-  base_image.src = './media/qurankid.png';
-  base_image.onload = function(){
-    context.drawImage(base_image,0,0);
-  }
-}
 
 createTimeline();
