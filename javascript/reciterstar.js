@@ -1,3 +1,4 @@
+console.log("Hello, reciterstar.js");
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
 var audioContext = new AudioContext();
@@ -18,17 +19,17 @@ var confidence = 0;
 var currentPitch = 0;
 
 var pitchCounter = 1;
-var pitchArray = [65,69,94,94,94,93,93,93,93,93,93,93,93,93,93,93,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,85,86,74,86,86,62,58,86,86,74,58,86,86,86,66,67,86,74,86,86,86,150,67,67,85,85,150,150,150,150,150,150,150,150,150,150,150,92,150,93,69,74,65,81,81,59,81,81,81,81,81,81,74,81,81,74,57,59,65,93,150,150,150,150,150,150,86,86,86,86,86,86,67,74,86,74,86,67,86,62,86,86,86,86,86,86,86,86,74,58,86,85,150,150,150,150,150,150,92,92,92,92,92,92,93,92,93,93,65,93,65,57,69,93,74,93,93,93,93,93,93,150,150,150,150,150,150,150,86,87,87,56,87,87,87,150,150,150,87,68,87,87,63,87,87,87,87,87,87,56,63,150,150,74];
+var templatePitchArray = [65,69,94,94,94,93,93,93,93,93,93,93,93,93,93,93,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,85,86,74,86,86,62,58,86,86,74,58,86,86,86,66,67,86,74,86,86,86,150,67,67,85,85,150,150,150,150,150,150,150,150,150,150,150,92,150,93,69,74,65,81,81,59,81,81,81,81,81,81,74,81,81,74,57,59,65,93,150,150,150,150,150,150,86,86,86,86,86,86,67,74,86,74,86,67,86,62,86,86,86,86,86,86,86,86,74,58,86,85,150,150,150,150,150,150,92,92,92,92,92,92,93,92,93,93,65,93,65,57,69,93,74,93,93,93,93,93,93,150,150,150,150,150,150,150,86,87,87,56,87,87,87,150,150,150,87,68,87,87,63,87,87,87,87,87,87,56,63,150,150,74];
 
-var pitchArray2 = new Array();
-var pitchCompare = new Array();
+var testPitchArray = new Array();
+var pitchDiff = new Array();
 var FreqUpdate=5;
 
 var v = document.getElementsByTagName("video")[0] 
 
 var start = new Date().getTime();
-var freq = new TimeSeries();
-var template = new TimeSeries();
+var testPitchTS = new TimeSeries();
+var templatePitchTS = new TimeSeries();
 
 window.onload = function() {
 	var request = new XMLHttpRequest();
@@ -115,7 +116,6 @@ function togglePlayback() {
     if (isPlaying) {
         //stop playing and return
         sourceNode.stop( now );
-		pitchArray2.length= new Array();
         sourceNode = null;
         analyser = null;
         isPlaying = false;
@@ -124,6 +124,11 @@ function togglePlayback() {
         window.cancelAnimationFrame( rafID );
         return "start";
     }
+
+    // Reset testing pitch array
+    if (testPitchArray.length > 0) {
+		testPitchArray = new Array();
+	}
 
     sourceNode = audioContext.createBufferSource();
     sourceNode.buffer = theBuffer;
@@ -158,27 +163,29 @@ function noteFromPitch( frequency ) {
 	
 }
 
+// BUG: pitchDiff is empty?
 function displayPitchArray() {
-	//console.log(pitchArray)
-	if (pitchArray.length < pitchArray2.length){
-		for (var i = 0; i < pitchArray.length; i++){
-			pitchCompare[i] = pitchArray[i] - pitchArray2[i];
+	//console.log(templatePitchArray)
+	if (templatePitchArray.length < testPitchArray.length) {
+		for (var i = 0; i < templatePitchArray.length; i++) {
+			pitchDiff[i] = templatePitchArray[i] - testPitchArray[i];
+			console.log("pitchDiff: " + pitchDiff[i]);
 		}
-		console.log(pitchCompare)
 	}
-	if (pitchArray2.length <= pitchArray.length){
-		for (var i = 0; i < pitchArray2.length; i++){
-			pitchCompare[i] = pitchArray[i] - pitchArray2[i];
+	if (templatePitchArray.length >= testPitchArray.length) {
+		for (var i = 0; i < testPitchArray.length; i++) {
+			pitchDiff[i] = templatePitchArray[i] - testPitchArray[i];
+			console.log("pitchDiff: " + pitchDiff[i]);
 		}
-		console.log(pitchCompare);
 	}
+	console.log("pitchDiff.length: " + pitchDiff.length);
 	var total = 0;
-	for(var i in pitchCompare) { total += Math.abs(pitchCompare[i]); }
-	console.log(total);
+	for(var i in pitchDiff) { total += Math.abs(pitchDiff[i]); }
+	// console.log(total);
 	if (total < 7000) {
-		alert(JSON.stringify("MashaAllah well done!"));
+		alert(JSON.stringify("MashaAllah well done! Score (less is better): " + total));
 	} else {
-		alert(JSON.singify("InshaAllah you'll do better next time!"));
+		alert(JSON.singify("InshaAllah you'll do better next time! Score (less is better): " + total));
 	}
 }
 
@@ -280,13 +287,13 @@ function updatePitch( time ) {
 // TODO: this is where TimeSeries are updated
 setInterval(function(){ 
 	if (confidence > 10) {
-		freq.append(new Date().getTime(), currentPitch);
-template=freq
+		testPitchTS.append(new Date().getTime(), currentPitch);
+templatePitchTS=testPitchTS
 
 
 	} else {
-		freq.append(new Date().getTime(), 0);
-template=freq
+		testPitchTS.append(new Date().getTime(), 0);
+templatePitchTS=testPitchTS
 
 	}
 }, 25);
@@ -297,8 +304,8 @@ function createTimeline() {
 
     var chart_gy = new SmoothieChart({millisPerPixel: 12, grid: {fillStyle: '#ffffff', strokeStyle: '#f4f4f4', sharpLines: true, millisPerLine: 5000, verticalSections: 5}, timestampFormatter: SmoothieChart.timeFormatter, minValue: gy_min, maxValue: gy_max, labels:{fillStyle:'#000000'}});
 
-    chart_gy.addTimeSeries(freq, {lineWidth: 2, strokeStyle: 'black', fillStyle:'rgba(0, 0, 0, 0.3)'});
-    chart_gy.streamTo(document.getElementById("freq-chart"));
+    chart_gy.addTimeSeries(testPitchTS, {lineWidth: 2, strokeStyle: 'black', fillStyle:'rgba(0, 0, 0, 0.3)'});
+    chart_gy.streamTo(document.getElementById("testPitchTS-chart"));
 
 }
 
