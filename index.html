@@ -52,12 +52,14 @@
 					<div class="note"><span id="note">--</span></div>   
 					<canvas id="output" width="300" height="42"></canvas>
 
-//Added canvas for video
+<!--Added canvas for video-->
 <div id="d1" style="position:absolute; top:0; left:350; z-index:1">  
-  <canvas id="vidoutput" width="600" height="300" style="border:4px solid #000000; "></canvas>
+<video width="600" height="295" controls muted="muted">
+  <source src="./media/fatiha.mp4" type="video/mp4">
+
 </div>
 
-//Added ReciterStars Logo
+<!--Added ReciterStars Logo-->
 <div id="d1" style="position:absolute; top:40; left:975; z-index:1">  
   <img src="./images/qurankid.png" class="qurankid"></img>
 </div>
@@ -78,6 +80,10 @@
 					<button type="button" class="btn btn-default" onclick="toggleLiveInput()">
 						<span class="glyphicon glyphicon-record"></span>Mic
 					</button>
+					<button type="button" class="btn btn-default" onclick="displayPitchArray()">
+						<span class="glyphicon glyphicon-record"></span>Array
+					</button>
+
 				</div>
 				<!-- <h2 id="totalDrags" class="num-value">
 			                0                                
@@ -91,7 +97,7 @@
 			</div>
 		</div>
 		<div class="well">
-			<canvas width="900" id="freq-chart"></canvas>
+			<canvas width="900" id="pitch-chart"></canvas>
 		</div>
 		<!-- <h3>Drag Detector</h3>
 		<div class="well">

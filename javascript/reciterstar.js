@@ -1,3 +1,4 @@
+console.log("Hello, reciterstar.js");
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
 var audioContext = new AudioContext();
@@ -12,22 +13,35 @@ var detectorElem,
 	detuneElem,
 	detuneAmount;
 var WIDTH=300;
-var CENTER=150;
+var CENTER=143;
 var HEIGHT=42;
 var confidence = 0;
 var currentPitch = 0;
 
+var templatePitchIndex = 0;
+var templatePitchArray = [65,69,94,94,94,93,93,93,93,93,93,93,93,93,93,93,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,85,86,74,86,86,62,58,86,86,74,58,86,86,86,66,67,86,74,86,86,86,150,67,67,85,85,150,150,150,150,150,150,150,150,150,150,150,92,150,93,69,74,65,81,81,59,81,81,81,81,81,81,74,81,81,74,57,59,65,93,150,150,150,150,150,150,86,86,86,86,86,86,67,74,86,74,86,67,86,62,86,86,86,86,86,86,86,86,74,58,86,85,150,150,150,150,150,150,92,92,92,92,92,92,93,92,93,93,65,93,65,57,69,93,74,93,93,93,93,93,93,150,150,150,150,150,150,150,86,87,87,56,87,87,87,150,150,150,87,68,87,87,63,87,87,87,87,87,87,56,63,150,150,74];
+// var templateSampleRate = 22050;
+
+var testPitchArray = new Array();
+var pitchDiff = new Array();
+var FreqUpdate=5;
+
+var v = document.getElementsByTagName("video")[0] 
+
 var start = new Date().getTime();
-var freq = new TimeSeries();
-var template = new TimeSeries();
+var testPitchTS = new TimeSeries();
+var templatePitchTS = new TimeSeries();
 
 window.onload = function() {
 	var request = new XMLHttpRequest();
-	request.open("GET", "./media/Whistle.mp3", true);
+
+//request.open("GET", "./media/Fatiha.mp4", true);
+request.open("GET", "./media/Whistle.mp3", true);
 	request.responseType = "arraybuffer";
 	request.onload = function() {
 	  audioContext.decodeAudioData( request.response, function(buffer) { 
 	    	theBuffer = buffer;
+
 		} );
 	}
 	request.send();
@@ -50,7 +64,7 @@ window.onload = function() {
 
 	  	var reader = new FileReader();
 	  	reader.onload = function (event) {
-	  		audioContext.decodeAudioData( event.target.result, function(buffer) {
+audioContext.decodeAudioData( event.target.result, function(buffer) {
 	    		theBuffer = buffer;
 	  		}, function(){alert("error loading!");} ); 
 
@@ -59,6 +73,8 @@ window.onload = function() {
 	  		alert("Error: " + reader.error );
 		};
 	  	reader.readAsArrayBuffer(e.dataTransfer.files[0]);
+
+
 	  	return false;
 	};
 }
@@ -94,6 +110,7 @@ function toggleLiveInput() {
     getUserMedia({audio:true}, gotStream);
 }
 
+
 function togglePlayback() {
     var now = audioContext.currentTime;
 
@@ -109,11 +126,17 @@ function togglePlayback() {
         return "start";
     }
 
+    // Reset testing pitch array
+    if (testPitchArray.length > 0) {
+		testPitchArray = new Array();
+	}
+
     sourceNode = audioContext.createBufferSource();
     sourceNode.buffer = theBuffer;
     sourceNode.loop = true;
 
     analyser = audioContext.createAnalyser();
+	  		v.play()
     analyser.fftSize = 2048;
     sourceNode.connect( analyser );
     analyser.connect( audioContext.destination );
@@ -135,7 +158,36 @@ var noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "
 
 function noteFromPitch( frequency ) {
 	var noteNum = 12 * (Math.log( frequency / 440 )/Math.log(2) );
+	PitchUpdate=Math.round( noteNum ) + 69
 	return Math.round( noteNum ) + 69;
+	
+	
+}
+
+// BUG: pitchDiff is empty?
+function displayPitchArray() {
+	//console.log(templatePitchArray)
+	if (templatePitchArray.length < testPitchArray.length) {
+		for (var i = 0; i < templatePitchArray.length; i++) {
+			pitchDiff[i] = templatePitchArray[i] - testPitchArray[i];
+			console.log("pitchDiff: " + pitchDiff[i]);
+		}
+	}
+	if (templatePitchArray.length >= testPitchArray.length) {
+		for (var i = 0; i < testPitchArray.length; i++) {
+			pitchDiff[i] = templatePitchArray[i] - testPitchArray[i];
+			console.log("pitchDiff: " + pitchDiff[i]);
+		}
+	}
+	console.log("pitchDiff.length: " + pitchDiff.length);
+	var total = 0;
+	for(var i in pitchDiff) { total += Math.abs(pitchDiff[i]); }
+	// console.log(total);
+	if (total < 7000) {
+		alert(JSON.stringify("MashaAllah well done! Score (less is better): " + total));
+	} else {
+		alert(JSON.singify("InshaAllah you'll do better next time! Score (less is better): " + total));
+	}
 }
 
 function frequencyFromNoteNumber( note ) {
@@ -236,25 +288,33 @@ function updatePitch( time ) {
 
 // TODO: this is where TimeSeries are updated
 setInterval(function(){ 
-	if (confidence > 10) {
-		freq.append(new Date().getTime(), currentPitch);
-template=freq
-
+	var t = new Date().getTime();
+	
+	if (templatePitchIndex === templatePitchArray.length) {
+		templatePitchIndex = 0;
+		console.log("templatePitchIndex reset");
+	}
+	if (isPlaying) {
+		templatePitchTS.append(t, templatePitchArray[templatePitchIndex++]);
 	} else {
-		freq.append(new Date().getTime(), 0);
-template=freq
-
+		templatePitchTS.append(t, 0);
+	}
+	if (confidence > 10) {
+		testPitchTS.append(t, currentPitch);
+	} else {
+		testPitchTS.append(t, 0);
 	}
 }, 25);
 
 function createTimeline() {
     var gy_min = 0;
-    var gy_max = 100;
+    var gy_max = 200;
 
     var chart_gy = new SmoothieChart({millisPerPixel: 12, grid: {fillStyle: '#ffffff', strokeStyle: '#f4f4f4', sharpLines: true, millisPerLine: 5000, verticalSections: 5}, timestampFormatter: SmoothieChart.timeFormatter, minValue: gy_min, maxValue: gy_max, labels:{fillStyle:'#000000'}});
 
-    chart_gy.addTimeSeries(freq, {lineWidth: 2, strokeStyle: 'black', fillStyle:'rgba(0, 0, 0, 0.3)'});
-    chart_gy.streamTo(document.getElementById("freq-chart"));
+    chart_gy.addTimeSeries(testPitchTS, {lineWidth: 2, strokeStyle: 'black', fillStyle:'rgba(0, 0, 0, 0.3)'});
+    chart_gy.addTimeSeries(templatePitchTS, {lineWidth: 2, strokeStyle: 'red', fillStyle:'rgba(0, 0, 0, 0.3)'});
+    chart_gy.streamTo(document.getElementById("pitch-chart"));
 
 }
 
