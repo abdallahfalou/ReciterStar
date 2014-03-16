@@ -3,7 +3,9 @@ window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
 var audioContext = new AudioContext();
 var isPlaying = false;
-var sourceNode = null;
+var isLiveInput = false;
+var demoSourceNode = null;
+var micSourceNode = null;
 var analyser = null;
 var theBuffer = null;
 var detectorElem, 
@@ -95,19 +97,35 @@ function getUserMedia(dictionary, callback) {
     }
 }
 
-function gotStream(stream) {
-    // Create an AudioNode from the stream.
-    var mediaStreamSource = audioContext.createMediaStreamSource(stream);
-
-    // Connect it to the destination.
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
-    mediaStreamSource.connect( analyser );
-    updatePitch();
-}
-
 function toggleLiveInput() {
-    getUserMedia({audio:true}, gotStream);
+    if (isLiveInput) {
+    	console.log("Stop mic stream");
+    	// stop recording from mic using stream.stop() or something like that
+    	// micSourceNode.stop();
+    	micSourceNode = null;
+    	analyser = null;
+    	isLiveInput = false;
+    	if (!window.cancelAnimationFrame)
+			window.cancelAnimationFrame = window.webkitCancelAnimationFrame;
+        window.cancelAnimationFrame( rafID );
+
+    	return "Mic";
+    }
+
+    getUserMedia({audio:true}, function(stream) {
+    	console.log("Got mic stream");
+		// Create an AudioNode from the stream.
+		micSourceNode = audioContext.createMediaStreamSource(stream);
+
+		// Connect it to the destination.
+		analyser = audioContext.createAnalyser();
+		analyser.fftSize = 2048;
+		micSourceNode.connect( analyser );
+		isLiveInput = true;
+		isPlaying = false;
+		updatePitch();
+    });
+    return "Stop";
 }
 
 
@@ -116,8 +134,8 @@ function togglePlayback() {
 
     if (isPlaying) {
         //stop playing and return
-        sourceNode.stop( now );
-        sourceNode = null;
+        demoSourceNode.stop( now );
+        demoSourceNode = null;
         analyser = null;
         isPlaying = false;
 		if (!window.cancelAnimationFrame)
@@ -127,20 +145,20 @@ function togglePlayback() {
     }
 
     // Reset testing pitch array
-    if (testPitchArray.length > 0) {
+	if (testPitchArray.length > 0) {
 		testPitchArray = new Array();
 	}
 
-    sourceNode = audioContext.createBufferSource();
-    sourceNode.buffer = theBuffer;
-    sourceNode.loop = true;
+    demoSourceNode = audioContext.createBufferSource();
+    demoSourceNode.buffer = theBuffer;
+    demoSourceNode.loop = true;
 
     analyser = audioContext.createAnalyser();
 	  		v.play()
     analyser.fftSize = 2048;
-    sourceNode.connect( analyser );
+    demoSourceNode.connect( analyser );
     analyser.connect( audioContext.destination );
-    sourceNode.start( now );
+    demoSourceNode.start( now );
     isPlaying = true;
     isLiveInput = false;
     updatePitch();
@@ -293,21 +311,22 @@ setInterval(function(){
 		templatePitchIndex = 0;
 		console.log("templatePitchIndex reset");
 	}
-	if (isPlaying) {
+	if (isPlaying || isLiveInput) {
 		templatePitchTS.append(t, templatePitchArray[templatePitchIndex++]);
+		if (confidence > 10) {
+			testPitchTS.append(t, currentPitch);
+		} else {
+			testPitchTS.append(t, 0);
+		}
 	} else {
 		templatePitchTS.append(t, 0);
-	}
-	if (confidence > 10) {
-		testPitchTS.append(t, currentPitch);
-	} else {
 		testPitchTS.append(t, 0);
 	}
 }, 25);
 
 function createTimeline() {
     var gy_min = 0;
-    var gy_max = 200;
+    var gy_max = 500;
 
     var chart_gy = new SmoothieChart({millisPerPixel: 12, grid: {fillStyle: '#ffffff', strokeStyle: '#f4f4f4', sharpLines: true, millisPerLine: 5000, verticalSections: 5}, timestampFormatter: SmoothieChart.timeFormatter, minValue: gy_min, maxValue: gy_max, labels:{fillStyle:'#000000'}});
 
