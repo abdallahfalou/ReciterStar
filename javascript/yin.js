@@ -4,7 +4,7 @@
  
  RETURN: pitch in Hz
 */
-function estimatePitchYIN(inputBuffer, sampleRate, confidence) {
+function estimatePitchYIN(inputBuffer, sampleRate) {
 	var THRESHOLD = 0.15;
 
 	var tauEstimate = -1;

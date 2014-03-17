@@ -19,6 +19,7 @@ var CENTER=143;
 var HEIGHT=42;
 var confidence = 0;
 var currentPitch = 0;
+var bufferLength = 1024;
 
 var templatePitchIndex = 0;
 var templatePitchArray = [65,69,94,94,94,93,93,93,93,93,93,93,93,93,93,93,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,85,86,74,86,86,62,58,86,86,74,58,86,86,86,66,67,86,74,86,86,86,150,67,67,85,85,150,150,150,150,150,150,150,150,150,150,150,92,150,93,69,74,65,81,81,59,81,81,81,81,81,81,74,81,81,74,57,59,65,93,150,150,150,150,150,150,86,86,86,86,86,86,67,74,86,74,86,67,86,62,86,86,86,86,86,86,86,86,74,58,86,85,150,150,150,150,150,150,92,92,92,92,92,92,93,92,93,93,65,93,65,57,69,93,74,93,93,93,93,93,93,150,150,150,150,150,150,150,86,87,87,56,87,87,87,150,150,150,87,68,87,87,63,87,87,87,87,87,87,56,63,150,150,74];
@@ -119,7 +120,7 @@ function toggleLiveInput() {
 
 		// Connect it to the destination.
 		analyser = audioContext.createAnalyser();
-		analyser.fftSize = 2048;
+		analyser.fftSize = bufferLength;
 		micSourceNode.connect( analyser );
 		isLiveInput = true;
 		isPlaying = false;
@@ -155,7 +156,7 @@ function togglePlayback() {
 
     analyser = audioContext.createAnalyser();
 	  		v.play()
-    analyser.fftSize = 2048;
+    analyser.fftSize = bufferLength;
     demoSourceNode.connect( analyser );
     analyser.connect( audioContext.destination );
     demoSourceNode.start( now );
@@ -168,8 +169,7 @@ function togglePlayback() {
 
 var rafID = null;
 var tracks = null;
-var buflen = 2048;
-var buf = new Uint8Array( buflen );
+var buf = new Uint8Array( bufferLength );
 var MINVAL = 134;  // 128 == zero.  MINVAL is the "minimum detected signal" level.
 
 var noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -262,9 +262,10 @@ function updatePitch( time ) {
 
 	// // possible other approach to confidence: sort the array, take the median; go through the array and compute the average deviation
 	// autoCorrelate( buf, audioContext.sampleRate );
-	currentPitch = estimatePitchYIN(buf, audioContext.sampleRate, confidence);
+	currentPitch = estimatePitchYIN(buf, audioContext.sampleRate);
 	// console.log(currentPitch);
-	confidence = 11; // temporary just to be over threshold and test estimatePitchYIN()
+	if (currentPitch == -1) confidence = 0; // temporary just until "confidence" is eliminated from code
+	else confidence = 100;
 
  	if (confidence <10) {
  		detectorElem.className = "vague";
