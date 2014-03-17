@@ -10,12 +10,22 @@ function estimatePitchYIN(inputBuffer, sampleRate, confidence) {
 	var tauEstimate = -1;
 	var pitchInHertz = -1;
 	var bufferSize = inputBuffer.length;
-	if (bufferSize % 2 === 1) bufferSize--;
+	if (bufferSize % 2 == 1) bufferSize--;
 	var overlapSize = bufferSize/2;
-	var yinBuffer = new Array();
+	var yinBuffer = new Array(overlapSize);
 
 	confidence = 100;
-	return 30; 
+
+	YIN_difference(inputBuffer, yinBuffer);
+	YIN_cumulativeMeanNormalizedDifference(yinBuffer);
+	tauEstimate = YIN_absoluteThreshold(yinBuffer, THRESHOLD);
+	if (tauEstimate != -1) {
+		var betterTau = YIN_parabolicInterpolation(yinBuffer, tauEstimate);
+		// Step 6 not implmented yet
+		pitchInHertz = sampleRate / betterTau;
+	}
+
+	return pitchInHertz; 
 }
 
 /*
@@ -88,7 +98,7 @@ function YIN_absoluteThreshold(yinBuffer, threshold) {
  
  RETURN: a better, more precise tau value.
  */
-function YIN_parabolicInterpolation(tauEstimate) {
+function YIN_parabolicInterpolation(yinBuffer, tauEstimate) {
 	var s0, s1, s2;
 	var x0 = (tauEstimate < 1) ? tauEstimate : tauEstimate - 1;
 	var x2 = (tauEstimate + 1 < yinBuffer.length) ? tauEstimate + 1 : tauEstimate;
@@ -101,7 +111,7 @@ function YIN_parabolicInterpolation(tauEstimate) {
 	s2 = yinBuffer[x2];
 	//fixed AUBIO implementation, thanks to Karl Helgason:
 	//(2.0f * s1 - s2 - s0) was incorrectly multiplied with -1
-	return tauEstimate + 0.5f * (s2 - s0 ) / (2.0f * s1 - s2 - s0);
+	return tauEstimate + 0.5 * (s2 - s0 ) / (2.0 * s1 - s2 - s0);
 }
 
 //TODO: finish estimatePitchYIN to utilize "private" functions above and return pitch value

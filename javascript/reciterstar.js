@@ -263,6 +263,7 @@ function updatePitch( time ) {
 	// // possible other approach to confidence: sort the array, take the median; go through the array and compute the average deviation
 	// autoCorrelate( buf, audioContext.sampleRate );
 	currentPitch = estimatePitchYIN(buf, audioContext.sampleRate, confidence);
+	// console.log(currentPitch);
 	confidence = 11; // temporary just to be over threshold and test estimatePitchYIN()
 
  	if (confidence <10) {
@@ -327,7 +328,7 @@ setInterval(function(){
 
 function createTimeline() {
     var gy_min = 0;
-    var gy_max = 500;
+    var gy_max = 2000;
 
     var chart_gy = new SmoothieChart({millisPerPixel: 12, grid: {fillStyle: '#ffffff', strokeStyle: '#f4f4f4', sharpLines: true, millisPerLine: 5000, verticalSections: 5}, timestampFormatter: SmoothieChart.timeFormatter, minValue: gy_min, maxValue: gy_max, labels:{fillStyle:'#000000'}});
 
