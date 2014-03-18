@@ -1,8 +1,11 @@
+console.log("Hello, reciterstar.js");
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
 var audioContext = new AudioContext();
 var isPlaying = false;
-var sourceNode = null;
+var isLiveInput = false;
+var demoSourceNode = null;
+var micSourceNode = null;
 var analyser = null;
 var theBuffer = null;
 var detectorElem, 
@@ -16,19 +19,21 @@ var CENTER=143;
 var HEIGHT=42;
 var confidence = 0;
 var currentPitch = 0;
+var bufferLength = 1024;
 
-var pitchCounter = 1;
-var pitchArray = [65,69,94,94,94,93,93,93,93,93,93,93,93,93,93,93,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,85,86,74,86,86,62,58,86,86,74,58,86,86,86,66,67,86,74,86,86,86,150,67,67,85,85,150,150,150,150,150,150,150,150,150,150,150,92,150,93,69,74,65,81,81,59,81,81,81,81,81,81,74,81,81,74,57,59,65,93,150,150,150,150,150,150,86,86,86,86,86,86,67,74,86,74,86,67,86,62,86,86,86,86,86,86,86,86,74,58,86,85,150,150,150,150,150,150,92,92,92,92,92,92,93,92,93,93,65,93,65,57,69,93,74,93,93,93,93,93,93,150,150,150,150,150,150,150,86,87,87,56,87,87,87,150,150,150,87,68,87,87,63,87,87,87,87,87,87,56,63,150,150,74]
+var templatePitchIndex = 0;
+var templatePitchArray = [65,69,94,94,94,93,93,93,93,93,93,93,93,93,93,93,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,150,85,86,74,86,86,62,58,86,86,74,58,86,86,86,66,67,86,74,86,86,86,150,67,67,85,85,150,150,150,150,150,150,150,150,150,150,150,92,150,93,69,74,65,81,81,59,81,81,81,81,81,81,74,81,81,74,57,59,65,93,150,150,150,150,150,150,86,86,86,86,86,86,67,74,86,74,86,67,86,62,86,86,86,86,86,86,86,86,74,58,86,85,150,150,150,150,150,150,92,92,92,92,92,92,93,92,93,93,65,93,65,57,69,93,74,93,93,93,93,93,93,150,150,150,150,150,150,150,86,87,87,56,87,87,87,150,150,150,87,68,87,87,63,87,87,87,87,87,87,56,63,150,150,74];
+// var templateSampleRate = 22050;
 
-var pitchArray2 = new Array()
-var pitchCompare = new Array()
+var testPitchArray = new Array();
+var pitchDiff = new Array();
 var FreqUpdate=5;
 
 var v = document.getElementsByTagName("video")[0] 
 
 var start = new Date().getTime();
-var freq = new TimeSeries();
-var template = new TimeSeries();
+var testPitchTS = new TimeSeries();
+var templatePitchTS = new TimeSeries();
 
 window.onload = function() {
 	var request = new XMLHttpRequest();
@@ -93,19 +98,35 @@ function getUserMedia(dictionary, callback) {
     }
 }
 
-function gotStream(stream) {
-    // Create an AudioNode from the stream.
-    var mediaStreamSource = audioContext.createMediaStreamSource(stream);
-
-    // Connect it to the destination.
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
-    mediaStreamSource.connect( analyser );
-    updatePitch();
-}
-
 function toggleLiveInput() {
-    getUserMedia({audio:true}, gotStream);
+    if (isLiveInput) {
+    	console.log("Stop mic stream");
+    	// stop recording from mic using stream.stop() or something like that
+    	// micSourceNode.stop();
+    	micSourceNode = null;
+    	analyser = null;
+    	isLiveInput = false;
+    	if (!window.cancelAnimationFrame)
+			window.cancelAnimationFrame = window.webkitCancelAnimationFrame;
+        window.cancelAnimationFrame( rafID );
+
+    	return "Mic";
+    }
+
+    getUserMedia({audio:true}, function(stream) {
+    	console.log("Got mic stream");
+		// Create an AudioNode from the stream.
+		micSourceNode = audioContext.createMediaStreamSource(stream);
+
+		// Connect it to the destination.
+		analyser = audioContext.createAnalyser();
+		analyser.fftSize = bufferLength;
+		micSourceNode.connect( analyser );
+		isLiveInput = true;
+		isPlaying = false;
+		updatePitch();
+    });
+    return "Stop";
 }
 
 
@@ -114,9 +135,8 @@ function togglePlayback() {
 
     if (isPlaying) {
         //stop playing and return
-        sourceNode.stop( now );
-		pitchArray2.length=0 
-        sourceNode = null;
+        demoSourceNode.stop( now );
+        demoSourceNode = null;
         analyser = null;
         isPlaying = false;
 		if (!window.cancelAnimationFrame)
@@ -125,16 +145,21 @@ function togglePlayback() {
         return "start";
     }
 
-    sourceNode = audioContext.createBufferSource();
-    sourceNode.buffer = theBuffer;
-    sourceNode.loop = true;
+    // Reset testing pitch array
+	if (testPitchArray.length > 0) {
+		testPitchArray = new Array();
+	}
+
+    demoSourceNode = audioContext.createBufferSource();
+    demoSourceNode.buffer = theBuffer;
+    demoSourceNode.loop = true;
 
     analyser = audioContext.createAnalyser();
 	  		v.play()
-    analyser.fftSize = 2048;
-    sourceNode.connect( analyser );
+    analyser.fftSize = bufferLength;
+    demoSourceNode.connect( analyser );
     analyser.connect( audioContext.destination );
-    sourceNode.start( now );
+    demoSourceNode.start( now );
     isPlaying = true;
     isLiveInput = false;
     updatePitch();
@@ -144,8 +169,7 @@ function togglePlayback() {
 
 var rafID = null;
 var tracks = null;
-var buflen = 2048;
-var buf = new Uint8Array( buflen );
+var buf = new Uint8Array( bufferLength );
 var MINVAL = 134;  // 128 == zero.  MINVAL is the "minimum detected signal" level.
 
 var noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -158,30 +182,30 @@ function noteFromPitch( frequency ) {
 	
 }
 
-function displayPitchArray(){
-//console.log(pitchArray)
-if (pitchArray.length<pitchArray2.length){
-for (var i =0; i<pitchArray.length;i++){
-pitchCompare[i]=pitchArray[i]-pitchArray2[i]
-}
-console.log(pitchCompare)
-}
-if (pitchArray2.length<pitchArray.length){
-for (var i =0; i<pitchArray2.length;i++){
-pitchCompare[i]=pitchArray[i]-pitchArray2[i]
-}
-console.log(pitchCompare)
-}
-var total = 0;
-for(var i in pitchCompare) { total += Math.abs(pitchCompare[i]); }
-console.log(total);
-if (total<7000){
-alert(JSON.stringify("MashaAllah well done!"));
-}
-else{
-alert(JSON.stringify("InshaAllah you'll do better next time!"));
-}
-
+// BUG: pitchDiff is empty?
+function displayPitchArray() {
+	//console.log(templatePitchArray)
+	if (templatePitchArray.length < testPitchArray.length) {
+		for (var i = 0; i < templatePitchArray.length; i++) {
+			pitchDiff[i] = templatePitchArray[i] - testPitchArray[i];
+			console.log("pitchDiff: " + pitchDiff[i]);
+		}
+	}
+	if (templatePitchArray.length >= testPitchArray.length) {
+		for (var i = 0; i < testPitchArray.length; i++) {
+			pitchDiff[i] = templatePitchArray[i] - testPitchArray[i];
+			console.log("pitchDiff: " + pitchDiff[i]);
+		}
+	}
+	console.log("pitchDiff.length: " + pitchDiff.length);
+	var total = 0;
+	for(var i in pitchDiff) { total += Math.abs(pitchDiff[i]); }
+	// console.log(total);
+	if (total < 7000) {
+		alert(JSON.stringify("MashaAllah well done! Score (less is better): " + total));
+	} else {
+		alert(JSON.singify("InshaAllah you'll do better next time! Score (less is better): " + total));
+	}
 }
 
 function frequencyFromNoteNumber( note ) {
@@ -236,9 +260,12 @@ function updatePitch( time ) {
 	var cycles = new Array;
 	analyser.getByteTimeDomainData( buf );
 
-	// possible other approach to confidence: sort the array, take the median; go through the array and compute the average deviation
-	autoCorrelate( buf, audioContext.sampleRate );
-
+	// // possible other approach to confidence: sort the array, take the median; go through the array and compute the average deviation
+	// autoCorrelate( buf, audioContext.sampleRate );
+	currentPitch = estimatePitchYIN(buf, audioContext.sampleRate);
+	// console.log(currentPitch);
+	if (currentPitch == -1) confidence = 0; // temporary just until "confidence" is eliminated from code
+	else confidence = 100;
 
  	if (confidence <10) {
  		detectorElem.className = "vague";
@@ -250,12 +277,6 @@ function updatePitch( time ) {
 	 	detectorElem.className = "confident";
 	 	pitchElem.innerText = Math.floor( currentPitch ) ;
 	 	var note =  noteFromPitch( currentPitch );
-		//	pitchArray[pitchCounter-1]=PitchUpdate
-		//	alert(JSON.stringify(pitchArray));
-		//pitchArray.push() 
-		pitchArray2[pitchCounter-1]=PitchUpdate
-		pitchCounter++
-		pitchArray2.push() 
 		noteElem.innerHTML = noteStrings[note%12];
 		var detune = centsOffFromPitch( currentPitch, note );
 		if (detune == 0 ) {
@@ -287,26 +308,34 @@ function updatePitch( time ) {
 
 // TODO: this is where TimeSeries are updated
 setInterval(function(){ 
-	if (confidence > 10) {
-		freq.append(new Date().getTime(), currentPitch);
-template=freq
-
-
+	var t = new Date().getTime();
+	
+	if (templatePitchIndex === templatePitchArray.length) {
+		templatePitchIndex = 0;
+		console.log("templatePitchIndex reset");
+	}
+	if (isPlaying || isLiveInput) {
+		templatePitchTS.append(t, templatePitchArray[templatePitchIndex++]);
+		if (confidence > 10) {
+			testPitchTS.append(t, currentPitch);
+		} else {
+			testPitchTS.append(t, 0);
+		}
 	} else {
-		freq.append(new Date().getTime(), 0);
-template=freq
-
+		templatePitchTS.append(t, 0);
+		testPitchTS.append(t, 0);
 	}
 }, 25);
 
 function createTimeline() {
     var gy_min = 0;
-    var gy_max = 15000;
+    var gy_max = 2000;
 
     var chart_gy = new SmoothieChart({millisPerPixel: 12, grid: {fillStyle: '#ffffff', strokeStyle: '#f4f4f4', sharpLines: true, millisPerLine: 5000, verticalSections: 5}, timestampFormatter: SmoothieChart.timeFormatter, minValue: gy_min, maxValue: gy_max, labels:{fillStyle:'#000000'}});
 
-    chart_gy.addTimeSeries(freq, {lineWidth: 2, strokeStyle: 'black', fillStyle:'rgba(0, 0, 0, 0.3)'});
-    chart_gy.streamTo(document.getElementById("freq-chart"));
+    chart_gy.addTimeSeries(testPitchTS, {lineWidth: 2, strokeStyle: 'black', fillStyle:'rgba(0, 0, 0, 0.3)'});
+    chart_gy.addTimeSeries(templatePitchTS, {lineWidth: 2, strokeStyle: 'red', fillStyle:'rgba(0, 0, 0, 0.3)'});
+    chart_gy.streamTo(document.getElementById("pitch-chart"));
 
 }
 
