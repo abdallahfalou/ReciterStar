@@ -17,19 +17,19 @@
 	<title>ReciterStar</title>
 
 	<style>
-	body { font: 14pt 'Alike', sans-serif;}
-	#note { font-size: 164px; }
+	body { font: 1pt 'Alike', sans-serif;}
+	#note { font-size: 1px; }
 	.droptarget { background-color: #348781}
 	div.confident { color: black; }
 	div.vague { color: lightgrey; }
-	#note { display: inline-block; height:180px; text-align: left;}
+	#note { display: inline-block; height:1px; text-align: left;} -->
 
 	#detector { width: 300px; height: 300px; border: 4px solid gray; border-radius: 8px; text-align: center; padding-top: 10px;}
 	#output { width: 300px; height: 42px; }
 	#flat { display: none; }
 	#sharp { display: none; }
 	.flat #flat { display: inline; }
-	.sharp #sharp { display: inline; }
+	.sharp #sharp { display: inline; } 
 	</style>
 
 	<style type="text/css"></style><style id="clearly_highlighting_css" type="text/css">/* selection */ html.clearly_highlighting_enabled ::-moz-selection { background: rgba(246, 238, 150, 0.99); } html.clearly_highlighting_enabled ::selection { background: rgba(246, 238, 150, 0.99); } /* cursor */ html.clearly_highlighting_enabled {    /* cursor and hot-spot position -- requires a default cursor, after the URL one */    cursor: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--cursor.png") 14 16, text; } /* highlight tag */ em.clearly_highlight_element {    font-style: inherit !important; font-weight: inherit !important;    background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--yellow.png");    background-repeat: repeat-x; background-position: top left; background-size: 100% 100%; } /* the delete-buttons are positioned relative to this */ em.clearly_highlight_element.clearly_highlight_first { position: relative; } /* delete buttons */ em.clearly_highlight_element a.clearly_highlight_delete_element {    display: none; cursor: pointer;    padding: 0; margin: 0; line-height: 0;    position: absolute; width: 34px; height: 34px; left: -17px; top: -17px;    background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--delete-sprite.png"); background-repeat: no-repeat; background-position: 0px 0px; } em.clearly_highlight_element a.clearly_highlight_delete_element:hover { background-position: -34px 0px; } /* retina */ @media (min--moz-device-pixel-ratio: 2), (-webkit-min-device-pixel-ratio: 2), (min-device-pixel-ratio: 2) {    em.clearly_highlight_element { background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--yellow@2x.png"); }    em.clearly_highlight_element a.clearly_highlight_delete_element { background-image: url("chrome-extension://pioclpoplcdbaefihamjohnefbikjilc/clearly/images/highlight--delete-sprite@2x.png"); background-size: 68px 34px; } } </style><style>[touch-action="none"]{ -ms-touch-action: none; touch-action: none; }[touch-action="pan-x"]{ -ms-touch-action: pan-x; touch-action: pan-x; }[touch-action="pan-y"]{ -ms-touch-action: pan-y; touch-action: pan-y; }[touch-action="scroll"],[touch-action="pan-x pan-y"],[touch-action="pan-y pan-x"]{ -ms-touch-action: pan-x pan-y; touch-action: pan-x pan-y; }</style>
@@ -55,7 +55,7 @@
 <!--Added canvas for video-->
 <div id="d1" style="position:absolute; top:0; left:350; z-index:1">  
 <video width="600" height="295" controls muted="muted">
-  <source src="./media/fatiha.mp4" type="video/mp4">
+  <source src="./media/Fatiha.mp4" type="video/mp4">
 
 </div>
 
@@ -72,29 +72,29 @@
 			    <h4>Note</h4> -->
 			</div>
 			
-			<div class="col-md-2">
-			 	<div class="btn-group">
+			<div class="col-md-5" style="position:absolute; top:100; left:0>
+			 	<div class="btn-group" >
 					<button type="button" class="btn btn-default" onclick="this.innerText = togglePlayback()">
-						<span class="glyphicon glyphicon-play"></span>Demo
+						<span class="glyphicon glyphicon-play"></span><img src="./images/Original.png">
 					</button>
-					<button type="button" class="btn btn-default" onclick="this.innerText = toggleLiveInput()">
-						<span class="glyphicon glyphicon-record"></span>Mic
+					<p>
+					<p>
+					<button type="button" class="btn btn-default" onclick="toggleLiveInput()">
+						<span class="glyphicon glyphicon-record"></span><img src="./images/Recite.png">
+					</button>
+					<p>
 					</button>
 					<button type="button" class="btn btn-default" onclick="displayPitchArray()">
-						<span class="glyphicon glyphicon-record"></span>Array
+						<span class="glyphicon glyphicon-record"></span><img src="./images/Score.png">
 					</button>
-
+								
 				</div>
 				<!-- <h2 id="totalDrags" class="num-value">
 			                0                                
 			    </h2>
 			    <h4>Number of Drags</h4> -->
 			</div>
- 			<div class="col-md-4">
-				<img src="./images/skull.png" width="25%" class="skull-off" id="skull" style="float:right">
-			 	<img src="./images/happy.png" width="25%" class="happy-off" id="happy" style="float:right">
-			 	<br>
-			</div>
+ 			
 		</div>
 		<div class="well">
 			<canvas width="900" id="pitch-chart"></canvas>
